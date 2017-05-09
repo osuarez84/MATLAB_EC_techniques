@@ -34,7 +34,7 @@ function lut = OSgenerateDPV(start, stop, step, ePulse, tPulse, scanRate)
     nSamplesDC = ceil((tInt - tPulse) / tTimer);
     
     % Calculamos el número de steps 
-    nSteps = abs(ceil((stop - start) / step));
+    nSteps = ceil(abs((stop - start) / step)));
     contRow = 0;        % lleva el seguimiento de la posición de la LUT
                         % donde vamos guardando cada dato
                         
@@ -56,7 +56,7 @@ function lut = OSgenerateDPV(start, stop, step, ePulse, tPulse, scanRate)
                     (step * (i-1));
             end
             contRow = contRow + j;
-        end
+        end     
         
     else                        % Si step baja...
         for i = 1:nSteps

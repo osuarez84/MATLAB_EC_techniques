@@ -21,9 +21,9 @@ function lut = OSgenerateNPV(start, stop, step, tPulse, scanRate)
     tInt = step / scanRate;
     
     %nº samples en zona DC
-    nSamplesDC = ceil((tInt - tPulse) / tTimer));
+    nSamplesDC = ceil((tInt - tPulse) / tTimer);
     
-    nSteps = abs(ceil(stop - start) / step);
+    nSteps = ceil(abs((stop - start) / step));
     contRow = 0;
     
     % Generamos la LUT en los bucles

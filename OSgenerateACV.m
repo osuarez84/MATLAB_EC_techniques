@@ -54,13 +54,26 @@ function lut = OSgenerateACV(start, stop, step, amplitude, scanRate, freq)
     %% 2) Generación del offset + AC para toda la prueba
     nSteps = ceil(abs((start - stop) / step));
     contRow = 0;
-    for i = 1:nSteps
-        for j = 1:nSamplesTint
-            lut(j + contRow) = (start + (step*(i-1))) + lutACtInt(j);
+    
+    if(start < stop)
+        for i = 1:nSteps
+            for j = 1:nSamplesTint
+                lut(j + contRow) = (start + (step*(i-1))) + lutACtInt(j);
+            end
+            contRow = contRow + j;
         end
-        contRow = contRow + j;
-    end
         
+    else
+        for i = 1:nSteps
+            for j = 1:nSamplesTint
+                lut(j + contRow) = (start - (step*(i-1))) + lutACtInt(j);
+            end
+            contRow = contRow + j;
+        end
+        
+        
+    end
+    
         
         
     

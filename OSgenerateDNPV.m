@@ -10,7 +10,7 @@
 % Revisar si el base potential debe de ser programable también.
 
 function lut = OSgenerateDNPV(start, stop, step, ePulse, tPulse1, tPulse2, ...
-    tInt)
+    scanRate)
 
     % Pulse 1 => primer pulso
     % Pulse 2 => segundo pulso (pulso añadido por encima de Pulse 1)
@@ -23,6 +23,9 @@ function lut = OSgenerateDNPV(start, stop, step, ePulse, tPulse1, tPulse2, ...
     % ______|           |_________
     %
     %%
+    % Calculamos el tInt
+    tInt = step / scanRate;
+    
     % Establecemos un número de samples mínimo en pulso 1
     nSamplesPulse1 = 10;
     
@@ -45,24 +48,43 @@ function lut = OSgenerateDNPV(start, stop, step, ePulse, tPulse1, tPulse2, ...
     contRow = 0;
     
     % Generamos cada parte de la onda...
-    for i = 1:nSteps
-        
-        for j = 1:nSamplesDC
-            lut(j + contRow) = start;
-        end
-        contRow = contRow + j;
-        
-        for j = 1:nSamplesP1
-            lut(j + contRow) = start + (step * (i-1));
-        end
-        contRow = contRow + j;
-        
-        for j = 1:nSamplesP2
-            lut(j + contRow) = (start + ePulse) + (step*(i-1));
-        end
-        contRow = contRow + j;
+    if(stop > start)            % Si step sube...
     
-    
+        for i = 1:nSteps
+
+            for j = 1:nSamplesDC
+                lut(j + contRow) = start;
+            end
+            contRow = contRow + j;
+
+            for j = 1:nSamplesP1
+                lut(j + contRow) = start + (step * (i-1));
+            end
+            contRow = contRow + j;
+
+            for j = 1:nSamplesP2
+                lut(j + contRow) = (start + ePulse) + (step*(i-1));
+            end
+            contRow = contRow + j;
+        end
+    else                        % Si step baja...
+            for i = 1:nSteps
+
+            for j = 1:nSamplesDC
+                lut(j + contRow) = start;
+            end
+            contRow = contRow + j;
+
+            for j = 1:nSamplesP1
+                lut(j + contRow) = start - (step * (i-1));
+            end
+            contRow = contRow + j;
+
+            for j = 1:nSamplesP2
+                lut(j + contRow) = (start + ePulse) - (step*(i-1));
+            end
+            contRow = contRow + j;
+        end
     end
     
     
