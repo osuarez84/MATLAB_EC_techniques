@@ -9,7 +9,7 @@
 function lut = OSgenerateSWV(start, stop, step, amplitude, freq)
     
     % con la freq sacamos los samples totales (aplicamos además Shannon)
-    fSampling = 100 * freq;   % oversampling...
+    fSampling = 500 * freq;   % oversampling...
     
     tTimer = 1 / fSampling;   % tiempo entre muestras (período muestreo)
     
@@ -19,8 +19,8 @@ function lut = OSgenerateSWV(start, stop, step, amplitude, freq)
     
     % Vamos a hacerlo en dos pasos
     % 1) Generar una onda cuadrada
-    nSamples1 = (1/freq) / tTimer;
-    nSamples2 = (1/freq) / tTimer;
+    nSamples1 = ((1/freq)/2) / tTimer;
+    nSamples2 = ((1/freq)/2) / tTimer;
     
     for i = 1:nSamples1
         lut1(i) = amplitude;

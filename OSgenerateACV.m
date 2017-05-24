@@ -9,7 +9,7 @@
 function lut = OSgenerateACV(start, stop, step, amplitude, scanRate, freq)
     
     % Periodo de muestreo
-    fSampling = freq * 100;     % oversampling...
+    fSampling = freq * 500;     % oversampling...
     tTimer = 1 / fSampling;
     nSamplesAC = ceil((1/freq) / tTimer);  % Samples de la señal AC
     
