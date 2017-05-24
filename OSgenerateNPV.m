@@ -12,7 +12,7 @@
 function lut = OSgenerateNPV(start, stop, step, tPulse, scanRate)
 
     % número samples mínimo en el pulso
-    nSamplesPulse = 10;
+    nSamplesPulse = 500;
     
     % tiempo de disparo de cada punto (API CEMITEC)
     tTimer = tPulse/nSamplesPulse;

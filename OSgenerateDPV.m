@@ -21,7 +21,7 @@ function lut = OSgenerateDPV(start, stop, step, ePulse, tPulse, scanRate)
     
     %%
     % Establecemos un número de samples mínimo en el pulso
-    nSamplesPulse = 10;
+    nSamplesPulse = 500;
     
     % tiempo de disparo que luego tendremos que pasarle 
     % a la API de CEMITEC (este tiempo es el tiempo de sampleo de la señal)
@@ -34,7 +34,7 @@ function lut = OSgenerateDPV(start, stop, step, ePulse, tPulse, scanRate)
     nSamplesDC = ceil((tInt - tPulse) / tTimer);
     
     % Calculamos el número de steps 
-    nSteps = ceil(abs((stop - start) / step)));
+    nSteps = ceil(abs((stop - start) / step));
     contRow = 0;        % lleva el seguimiento de la posición de la LUT
                         % donde vamos guardando cada dato
                         

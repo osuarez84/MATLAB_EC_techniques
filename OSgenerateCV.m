@@ -30,7 +30,7 @@
 %   * cvTable => tabla completa con todos los puntos para la CV
 %**********************************************************************
 
-function [cvTable] = generateCV (eStart, eVtx1, eVtx2, eStep, NumberScans)
+function [cvTable] = OSgenerateCV (eStart, eVtx1, eVtx2, eStep, NumberScans)
 % eStart= -2;
 % eVtx1 = -4;
 % eVtx2 = 4;

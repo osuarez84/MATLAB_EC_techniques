@@ -7,7 +7,7 @@
 % Fecha: 2017.04.05
 
 
-function OSgeneratePAD(eDC, ePulse1, tPulse1, ePulse2, tPulse2, tInt, tRun)
+function lut = OSgeneratePAD(eDC, ePulse1, tPulse1, ePulse2, tPulse2, tInt, tRun)
 
     
     % A partir del t interval saco la frecuencia de la señal y
@@ -47,14 +47,16 @@ function OSgeneratePAD(eDC, ePulse1, tPulse1, ePulse2, tPulse2, tInt, tRun)
     % 2) Genero la señal para el período tRun completo
     contRow = 0;
     for i = 1:nRuns
-        for j = 1:(nSamplesT1+nSamplesT2)
-            lut(j + contRow) = eDC + lut1(j);
-        end
-        contRow = contRow + j;
         for j = 1:nSamplesDC
             lut(j + contRow) = eDC;
         end
         contRow = contRow + j;
+        
+        for j = 1:(nSamplesT1+nSamplesT2)
+            lut(j + contRow) = eDC + lut1(j);
+        end
+        contRow = contRow + j;
+
     end
 
 

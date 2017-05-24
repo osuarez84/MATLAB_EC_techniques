@@ -27,7 +27,7 @@ function lut = OSgenerateDNPV(start, stop, step, ePulse, tPulse1, tPulse2, ...
     tInt = step / scanRate;
     
     % Establecemos un número de samples mínimo en pulso 1
-    nSamplesPulse1 = 10;
+    nSamplesPulse1 = 500;
     
     % tiempo de disparo que luego tendremos que pasarle 
     % a la API de CEMITEC
