@@ -7,74 +7,81 @@
 % Fecha: 2017.04.05
 
 function lut = OSgenerateACV(start, stop, step, amplitude, scanRate, freq)
+     
+    % fSampling = 20 * frec corte filtro
+    % Filtros :     Filtro Butterworth  => 250 Hz f. corte
+    %               Filtro Bessel       => 1.2 kHz f. corte
+    %               Filtro Butterworth  => 20 kHZ f. corte
     
-    % Periodo de muestreo
-    fSampling = freq * 500;     % oversampling...
-    tTimer = 1 / fSampling;
-    nSamplesAC = ceil((1/freq) / tTimer);  % Samples de la señal AC
-    
-    % Calculamos t interval
+
+    fSampling = 10000;          % Esta frecuencia de muestreo depende del
+                                % filtro seleccionado
+
+
+    % LUT debe de ir refrescandose entre steps
+    tSampling = 1/fSampling;
     tInt = step / scanRate;
     
-    
-    
-    %% 1) Generación la senoide para todo el t interval
-          
-     % ¿cuantos periodos de AC caben en t interval?
-     nPerAC = tInt / (1/freq);  
-     
-    % que nos da el numero de ptos totales del t interval...
-    nSamplesTint = ceil(nPerAC * nSamplesAC);
-       
-    % Genero la senoidal para todo el t int
-    % IMPORTANTE 
-    % En caso de que el nº de períodos AC que caben en el t interval no sea
-    % un número entero, debemos de poder sacar los puntos del
-    % período incompleto. 
-    % Esto se hace en la segunda parte del "if".
-    contj = 0;
-    for i = 1:ceil(nPerAC)
-        
-        if (i < nPerAC)          % Si no es ultimo período...
-            for j = 1:nSamplesAC
-                lutACtInt(j + contj) = amplitude * sin((2*pi/nSamplesAC)*(j-1));
-            end
-            contj = contj + j;              
-        else                     % Si último período...
-            % Aquí sacamos los samples del período incompleto...(si lo hay)
-           nSamplesRest = nSamplesTint - contj;
-           for j = 1:nSamplesRest       %
-               lutACtInt(j + contj) = amplitude * sin((2*pi/nSamplesAC)*(j-1));
-           end
-            
-        end
-    end
-         
+    nSamples1 = ceil(tInt / tSampling);
 
-    %% 2) Generación del offset + AC para toda la prueba
-    nSteps = ceil(abs((start - stop) / step));
-    contRow = 0;
     
-    if(start < stop)
-        for i = 1:nSteps
-            for j = 1:nSamplesTint
-                lut(j + contRow) = (start + (step*(i-1))) + lutACtInt(j);
-            end
-            contRow = contRow + j;
-        end
+    % Calculamos el número de steps 
+    nSteps = ceil(abs((stop - start) / step));
+    figure;
+    
+    % Calculamos nº de períodos (este valor debe de ser un entero)
+    nPer = tInt / (1/freq);
+    nSamplesPer = nSamples1 / nPer;
+    
+    if (stop > start)                   % steps suben...
         
-    else
         for i = 1:nSteps
-            for j = 1:nSamplesTint
-                lut(j + contRow) = (start - (step*(i-1))) + lutACtInt(j);
+            for p = 1:nPer  
+                for j = 1:nSamplesPer
+                    lut(j + nSamplesPer*(p-1)) = start +...
+                        amplitude * sin((2*pi/nSamplesPer)*(j-1)) + ...
+                        (step * (i-1));
+                end
             end
-            contRow = contRow + j;
+
+            % Lut final que quedaría al ver toda la serie completa
+            lutDAC((1:(nSamples1))+(length(lut)*(i-1))) = lut;
+
+            % Sacamos al DAC y refrescamos... 
+
         end
-        
+    
+    else                                % steps bajan...
+        for i = 1:nSteps
+            for p = 1:nPer  
+                for j = 1:nSamplesPer
+                    lut(j + nSamplesPer*(p-1)) = start +...
+                        amplitude * sin((2*pi/nSamplesPer)*(j-1)) - ...
+                        (step * (i-1));
+                end
+            end
+
+            % Lut final que quedaría al ver toda la serie completa
+            lutDAC((1:(nSamples1))+(length(lut)*(i-1))) = lut;
+
+            % Sacamos al DAC y refrescamos... 
+
+        end       
         
     end
     
-        
+        %%
+    % Ploteo final para testeo de la waveform
+    stairs(tSampling*(0:length(lutDAC)-1), lutDAC);
+    xlabel('Time [sec]');
+    ylabel('Voltage [V]');
+    grid on;
+    
+    
+    
+    
+    
+    
         
     
 

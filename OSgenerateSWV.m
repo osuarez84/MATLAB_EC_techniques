@@ -7,65 +7,68 @@
 % Fecha: 2017.04.05
 
 function lut = OSgenerateSWV(start, stop, step, amplitude, freq)
+       
+ % fSampling = 20 * frec corte filtro
+    % Filtros :     Filtro Butterworth  => 250 Hz f. corte
+    %               Filtro Bessel       => 1.2 kHz f. corte
+    %               Filtro Butterworth  => 20 kHZ f. corte
     
-    % con la freq sacamos los samples totales (aplicamos además Shannon)
-    fSampling = 500 * freq;   % oversampling...
+
+    fSampling = 10000;          % Esta frecuencia de muestreo depende del
+                                % filtro seleccionado
+
+    % LUT debe de ir refrescandose entre steps
+    tSampling = 1/fSampling;
+    t = (1/freq) / 2;
     
-    tTimer = 1 / fSampling;   % tiempo entre muestras (período muestreo)
+    nSamples1 = ceil(t / tSampling);
+
     
-    %nSamples = ceil(1/freq) / tTimer; % período señal / período muestreo
+    % Calculamos el número de steps 
+    nSteps = ceil(abs((stop - start) / step));
+    figure;
     
-    nSteps = ceil(abs((start - stop) / step));
-    
-    % Vamos a hacerlo en dos pasos
-    % 1) Generar una onda cuadrada
-    nSamples1 = ((1/freq)/2) / tTimer;
-    nSamples2 = ((1/freq)/2) / tTimer;
-    
-    for i = 1:nSamples1
-        lut1(i) = amplitude;
-    end
-    
-    for i = 1:nSamples2
-        lut2(i) = -amplitude;
-    end
-    
-    
-    % 2) Generar DC + SW
-    contRow = 0;
-    if (start < stop)       % subida....
+    if (stop > start)               % steps suben...
         for i = 1:nSteps
-            % Sumamos el offset DC + la SW del primer semiperiodo...
+            % Estos dos bucles deberían computarse en menos de 2 ms para
+            % refrescar la LUT.
             for j = 1:nSamples1
-                lut(j +  contRow) = (start + step*(i-1)) + lut1(j);
+                lut(j) = (start + amplitude) + (step * (i-1));
             end
-            contRow = contRow + j;
-            
-            % Sumamos el offset Dc + la SW del segundo semiperiodo...
-            for j = 1:nSamples2
-                lut(j + contRow) = (start +  step*(i-1) + lut2(j));
+
+            for j = 1:nSamples1
+                lut(j + nSamples1) = (start - amplitude) + (step * (i-1));
             end
-            contRow = contRow + j;
+
+            % Lut final que quedaría al ver toda la serie completa
+            lutDAC((1:(nSamples1*2))+(length(lut)*(i-1))) = lut;
+
+            % Sacamos al DAC y refrescamos...        
         end
-        
-    else                    % bajada...
+    else                            % steps bajan...    
         for i = 1:nSteps
+            % Estos dos bucles deberían computarse en menos de 2 ms para
+            % refrescar la LUT.
             for j = 1:nSamples1
-                lut(j +  contRow) = (start - step*(i-1)) + lut1(j);
+                lut(j) = (start + amplitude) - (step * (i-1));
             end
-            contRow = contRow + j;
-            
-            for j = 1:nSamples2
-                lut(j + contRow) = (start -  step*(i-1) + lut2(j));
+
+            for j = 1:nSamples1
+                lut(j + nSamples1) = (start - amplitude) - (step * (i-1));
             end
-            contRow = contRow + j;
+
+            % Lut final que quedaría al ver toda la serie completa
+            lutDAC((1:(nSamples1*2))+(length(lut)*(i-1))) = lut;
+
+            % Sacamos al DAC y refrescamos...        
         end
-            
     end
-    
-    
 
-
-
+    %%
+    % Ploteo final para testeo de la waveform
+    stairs(tSampling*(0:length(lutDAC)-1), lutDAC);
+    xlabel('Time [sec]');
+    ylabel('Voltage [V]');
+    grid on;
 
 end

@@ -6,55 +6,78 @@
 % Revisado por: 
 % Fecha: 2017.04.04
 
-% TODO: revisar el ciclo de finalización, ya que no termina correctamente.
-% Y revisar también si este tipo de señal se puede hacer negativo.
 
 function lut = OSgenerateNPV(start, stop, step, tPulse, scanRate)
 
-    % número samples mínimo en el pulso
-    nSamplesPulse = 500;
+    % fSampling = 20 * frec corte filtro
+    % Filtros :     Filtro Butterworth  => 250 Hz f. corte
+    %               Filtro Bessel       => 1.2 kHz f. corte
+    %               Filtro Butterworth  => 20 kHZ f. corte
     
-    % tiempo de disparo de cada punto (API CEMITEC)
-    tTimer = tPulse/nSamplesPulse;
-    
-    % calculamos t interval
+
+    fSampling = 10000;          % Esta frecuencia de muestreo depende del
+                                % filtro seleccionado
+
+    % LUT debe de ir refrescandose entre steps
+    tSampling = 1/fSampling;
     tInt = step / scanRate;
     
-    %nº samples en zona DC
-    nSamplesDC = ceil((tInt - tPulse) / tTimer);
+    nSamples1 = ceil((tInt - tPulse) / tSampling);
+    nSamples2 = ceil(tPulse / tSampling);
     
+    % Calculamos el número de steps 
     nSteps = ceil(abs((stop - start) / step));
-    contRow = 0;
+    figure;
     
-    % Generamos la LUT en los bucles
-    if (stop > start)       % Si step sube...
-       for i = 1:nSteps
-           for j = 1:nSamplesDC         % Generamos parte DC
-                lut(j + contRow) = start;
-           end
-           contRow = contRow + j;
-           
-           for j = 1:nSamplesPulse % Generamos parte Pulse
-                lut( j + contRow ) = start + ...
-                    (step * (i-1));
+    if(stop > start)                    % steps suben...
+         for i = 1:nSteps
+            % Estos dos bucles deberían computarse en menos de 2 ms para
+            % refrescar la LUT.
+            for j = 1:nSamples1
+                lut(j) = start;
             end
-            contRow = contRow + j;
-       end
-    else                    % Si step baja...
+
+            for j = 1:nSamples2
+                lut(j + nSamples1) = (start) + (step * (i));
+            end
+
+            % Lut final que quedaría al ver toda la serie completa
+            lutDAC((1:(nSamples1+nSamples2))+(length(lut)*(i-1))) = lut;
+
+            % Sacamos al DAC y refrescamos...        
+         end
+    else                                % steps bajan...
         for i = 1:nSteps
-           for j = 1:nSamplesDC         % Generamos parte DC
-                lut(j + contRow) = start;
-           end
-           contRow = contRow + j;
-           
-           for j = 1:nSamplesPulse % Generamos parte Pulse
-                lut( j + contRow ) = start - ...
-                    (step * (i-1));
+            % Estos dos bucles deberían computarse en menos de 2 ms para
+            % refrescar la LUT.
+            for j = 1:nSamples1
+                lut(j) = start;
             end
-            contRow = contRow + j;
-       end
+
+            for j = 1:nSamples2
+                lut(j + nSamples1) = (start) - (step * (i));
+            end
+
+            % Lut final que quedaría al ver toda la serie completa
+            lutDAC((1:(nSamples1+nSamples2))+(length(lut)*(i-1))) = lut;
+
+            % Sacamos al DAC y refrescamos...        
+        end
     end
-        
+    
+    
+    %%
+    % Ploteo final para testeo de la waveform
+    stairs(tSampling*(0:length(lutDAC)-1), lutDAC);
+    xlabel('Time [sec]');
+    ylabel('Voltage [V]');
+    grid on;
+    
+    
+    
+    
+    
+    
     
 
 end
