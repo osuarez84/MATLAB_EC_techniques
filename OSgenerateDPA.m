@@ -1,58 +1,54 @@
 %**********************************************************************
-%                                  PAD 
+%                                  DPA 
 %**********************************************************************
-% Generación de la señal para la técnica PAD.
+% Generación de la señal para la técnica DPA.
 % Autor: Omar Suárez
 % Revisado por: 
 % Fecha: 2017.04.05
 
-function OSgenerateDPA(eDC, ePulse, tPulse, tInt, tRun, mode)
+function OSgenerateDPA(eDC, ePulse, tPulse, tInt, tRun)
+    
+    % fSampling = 20 * frec corte filtro
+    % Filtros :     Filtro Butterworth  => 250 Hz f. corte
+    %               Filtro Bessel       => 1.2 kHz f. corte
+    %               Filtro Butterworth  => 20 kHZ f. corte
+    
 
-    % A partir del t interval saco la frecuencia de la señal y
-    % a partir de aquí el período de muestreo necesario
-    freq = 1 / tInt;
+    fSampling = 10000;          % Esta frecuencia de muestreo depende del
+                                % filtro seleccionado
 
-    fSampling = freq * 100;     % oversampling...
-    
-    % período de muestreo
-    tTimer = 1 / fSampling;
-    
-    % nº samples durante t pulse 1
-    nSamplesPulse = ceil(tPulse / tTimer);
-    
-    % nº samples durante DC
-    tDC = tInt - tPulse;
-    nSamplesDC = ceil(tDC / tTimer);
+    % LUT debe de ir refrescandose entre steps
+    tSampling = 1/fSampling;   
+
+    nSamples1 = ceil((tInt - tPulse) / tSampling);
+    nSamples2 = ceil(tPulse / tSampling);
     
     
-    % nº de runs
-    nRuns = ceil(tRun / tInt);
     
-    % 1) Generar señal de un período
-    for i = 1:nSamplesDC
-        lut1(i) = eDC;
+    % Primera parte de la señal...
+    for i = 1:nSamples1
+        lut(i) = eDC;
     end
     
-    for j = 1:nSamplesPulse
-        lut1(i + j) = ePulse + eDC;
+    % Segunda parte de la señal...
+    for i = 1:nSamples2
+        lut(i + nSamples1) = ePulse;
     end
     
-    
-    % 2) Genero la señal para el período tRun completo
-    contRow = 0;
-    for i = 1:nRuns
-        for j = 1:(nSamplesDC + nSamplesPulse)
-            lut(j + contRow) =  lut1(j);
-        end
-        contRow = contRow + j;
+    %% Generamos la señal de prueba que tendríamos con t Run
+    tDC = (tInt - tPulse);
+
+    n = ceil(tRun / (tDC + tPulse));
+    for i = 1:n
+        lutDAC((1:length(lut)) + (length(lut)*(i-1))) = lut;
     end
     
-    
-    
-    
-    
-    
-    
+    %%
+    % Ploteo final para testeo de la waveform
+    stairs(tSampling*(0:length(lutDAC)-1), lutDAC);
+    xlabel('Time [sec]');
+    ylabel('Voltage [V]');
+    grid on;
     
     
     
